@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🛠️ Panneau d'Administration</h1>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Voir le Site</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <!-- FORMULAIRE DE MODIFICATION DES TEXTES ET CONFIG -->
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm p-4">
+                <h3 class="card-title text-dark mb-4">Modifier les contenus vitrines</h3>
+                <form action="{{ url_for('admin') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="update_texts">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nom de l'entreprise (Titre principal)</label>
+                        <input type="text" class="form-file form-control" name="titre_accueil" value="{{ config.titre_accueil }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Slogan (Sous l'accueil)</label>
+                        <textarea class="form-control" name="slogan" rows="2">{{ config.slogan }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Numéro WhatsApp (Format sans '+' exemple: 243810000000)</label>
+                        <input type="text" class="form-control" name="whatsapp_num" value="{{ config.whatsapp_num }}">
+                    </div>
+
+                    <h5 class="text-primary mt-4">Section : Creusage des puits</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Titre Catégorie Creusage</label>
+                        <input type="text" class="form-control" name="creusage_titre" value="{{ config.creusage_titre }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description Creusage</label>
+                        <textarea class="form-control" name="creusage_desc" rows="3">{{ config.creusage_desc }}</textarea>
+                    </div>
+
+                    <h5 class="text-success mt-4">Section : Construction & Maçonnerie</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Titre Catégorie Construction</label>
+                        <input type="text" class="form-control" name="construction_titre" value="{{ config.construction_titre }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description Construction</label>
+                        <textarea class="form-control" name="construction_desc" rows="3">{{ config.construction_desc }}</textarea>
+                    </div>
+
+                    <h5 class="text-danger mt-4">Design du Site</h5>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Changer l'image de fond globale (Hero Background)</label>
+                        <input type="file" class="form-control" name="bg_image">
+                        <small class="text-muted">Actuelle : {{ config.bg_image }}</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100"><i class="fas fa-save"></i> Enregistrer toutes les modifications</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ZONE AJOUT & GESTION DES PHOTOS GALERIE -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm p-4 mb-4">
+                <h3 class="mb-3">Ajouter une réalisation</h3>
+                <form action="{{ url_for('admin') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="add_realisation">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Catégorie des travaux</label>
+                        <select class="form-select" name="categorie">
+                            <option value="creusage">Creusage / Puits</option>
+                            <option value="construction">Construction / Maçonnerie</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Choisir la photo (Chantier)</label>
+                        <input type="file" class="form-control" name="image_file" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description de ce travail</label>
+                        <textarea class="form-control" name="description" rows="2" placeholder="Ex: Forage d'un puits de 45m à Durba avec pompe solaire..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100"><i class="fas fa-plus"></i> Ajouter l'image</button>
+                </form>
+            </div>
+                    <button type="submit" class="btn btn-success w-100"><i class="fas fa-plus"></i> Ajouter l'image</button>
+                </form>
+            </div>
+
+            <!-- GESTION DE SUPPRESSION DES PHOTOS EXISTANTES -->
+            <div class="card shadow-sm p-4">
+                <h3 class="mb-3">Galerie Actuelle</h3>
+                <div class="row g-2" style="max-height: 400px; overflow-y: auto;">
+                    {% for img in realisations %}
+                    <div class="col-6 position-relative text-center mb-2">
+                        <img src="{{ url_for('static', filename='uploads/' + img.filename) }}" class="img-thumbnail" style="height: 100px; width: 100%; object-fit: cover;">
+                        <span class="badge bg-dark mt-1 d-block">{{ img.categorie }}</span>
+                        <a href="{{ url_for('delete_image', img_id=img.id) }}" class="btn btn-danger btn-sm w-100 mt-1" onclick="return confirm('Supprimer cette photo ?')">Supprimer</a>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Aucune photo importée.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

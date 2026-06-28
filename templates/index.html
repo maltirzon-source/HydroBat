@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    /* Hero section */
+    .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{{ url_for("static", filename="uploads/" + config.bg_image) }}') no-repeat center center/cover;
+        color: white;
+        padding: 60px 15px;
+        text-align: center;
+    }
+
+    /* Conteneur de défilement horizontal type Statuts Facebook */
+    .statuts-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        gap: 15px;
+        padding: 10px 5px 20px 5px;
+        scrollbar-width: none; /* Cache la barre sur Firefox */
+    }
+
+    .statuts-scroll-container::-webkit-scrollbar {
+        display: none; /* Cache la barre sur Chrome/Safari */
+    }
+
+    /* Carte format portrait (Plus haute que large) */
+    .statut-card {
+        flex: 0 0 160px;
+        width: 160px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        transition: transform 0.2s;
+        cursor: pointer;
+        border: none;
+    }
+
+    .statut-card:active {
+        transform: scale(0.95);
+    }
+
+    .statut-img {
+        height: 220px;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    /* Case de texte agrandie et écriture élégante */
+    .statut-text-box {
+        padding: 12px 8px;
+        background: #fdfdfd;
+        text-align: center;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .statut-elegant-text {
+        font-family: 'Georgia', serif;
+        font-style: italic;
+        font-size: 0.88rem;
+        color: #4a4a4a;
+        line-height: 1.3;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Section Témoignages / Livre d'or */
+    .testimonial-section {
+        background-color: #f4f7f6;
+        padding: 40px 15px;
+        border-radius: 16px;
+    }
+
+    .testimonial-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border-left: 4px solid #198754;
+        margin-bottom: 15px;
+    }
+
+    .testimonial-text {
+        font-family: 'Georgia', serif;
+        font-style: italic;
+        color: #555;
+    }
+
+    /* Bouton Retour en haut discret */
+    #btnScrollTop {
+        position: fixed;
+        bottom: 85px; /* Placé juste au-dessus du bouton WhatsApp flottant */
+        right: 20px;
+        z-index: 99;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        outline: none;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    #btnScrollTop:active {
+        background-color: #000;
+    }
+
+    /* Pied de page (Footer) élégant pour les Contacts */
+    .footer-contacts {
+        background-color: #212529;
+        color: #f8f9fa;
+        padding: 40px 20px 20px 20px;
+        margin-top: 50px;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+    }
+
+    .footer-contacts h3 {
+        color: #198754;
+        font-size: 1.4rem;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    .contact-item {
+        margin-bottom: 15px;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .contact-item i {
+        color: #198754;
+        font-size: 1.2rem;
+        width: 25px;
+    }
+
+    .contact-item a {
+        color: #f8f9fa;
+        text-decoration: none;
+    }
+
+    .contact-item a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<header class="hero-section">
+    <div class="container">
+        <h1 class="display-3 fw-bold">{{ config.titre_accueil }}</h1>
+        <p class="lead fs-3">{{ config.slogan }}</p>
+        <a href="https://wa.me/{{ config.whatsapp_num }}" class="btn btn-success btn-lg mt-3"><i class="fab fa-whatsapp"></i> Demander un devis immédiat</a>
+    </div>
+</header>
+
+<div class="container my-4">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="my-4">
+        <div class="p-3 bg-white rounded shadow-sm border-start border-primary border-5 mb-3">
+            <h2 class="text-primary fs-3 mb-1"><i class="fas fa-water"></i> {{ config.creusage_titre }}</h2>
+            <p class="fs-6 text-muted mb-0">{{ config.creusage_desc }}</p>
+        </div>
+
+        <div class="statuts-scroll-container">
+            {% for img in creusage_img %}
+                <div class="statut-card" data-bs-toggle="modal" data-bs-target="#modalImg{{ img.id }}">
+                    <img src="{{ url_for('static', filename='uploads/' + img.filename) }}" class="statut-img" alt="Chantier Puits">
+                    <div class="statut-text-box">
+                        <p class="statut-elegant-text">{{ img.description }}</p>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modalImg{{ img.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content bg-dark text-white">
+                            <div class="modal-header border-0">
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center p-0">
+                                <img src="{{ url_for('static', filename='uploads/' + img.filename) }}" class="img-fluid" style="max-height: 75vh; width: 100%; object-fit: contain;">
+                            </div>
+                            <div class="modal-footer bg-secondary border-0 justify-content-center">
+                                <p class="fs-5 m-0 text-center w-100 fw-bold">{{ img.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted ps-2">Aucune photo dans cette galerie pour le moment.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="my-4">
+        <div class="p-3 bg-white rounded shadow-sm border-start border-success border-5 mb-3">
+            <h2 class="text-success fs-3 mb-1"><i class="fas fa-hammer"></i> {{ config.construction_titre }}</h2>
+            <p class="fs-6 text-muted mb-0">{{ config.construction_desc }}</p>
+        </div>
+
+        <div class="statuts-scroll-container">
+            {% for img in construction_img %}
+                <div class="statut-card" data-bs-toggle="modal" data-bs-target="#modalImg{{ img.id }}">
+                    <img src="{{ url_for('static', filename='uploads/' + img.filename) }}" class="statut-img" alt="Chantier Maçonnerie">
+                    <div class="statut-text-box">
+                        <p class="statut-elegant-text">{{ img.description }}</p>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modalImg{{ img.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content bg-dark text-white">
+                            <div class="modal-header border-0">
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center p-0">
+                                <img src="{{ url_for('static', filename='uploads/' + img.filename) }}" class="img-fluid" style="max-height: 75vh; width: 100%; object-fit: contain;">
+                            </div>
+                            <div class="modal-footer bg-secondary border-0 justify-content-center">
+                                <p class="fs-5 m-0 text-center w-100 fw-bold">{{ img.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted ps-2">Aucune photo dans cette galerie pour le moment.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="testimonial-section my-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-dark fs-3"><i class="fas fa-comments text-success"></i> Avis de nos clients</h2>
+            <p class="text-muted">Ce qu'on dit de la qualité de nos chantiers</p>
+        </div>
+
+        <div class="testimonial-card">
+            <p class="testimonial-text">"Travail remarquable pour le forage de notre puits communautaire. L'eau est abondante, propre, et le système de pompe solaire fonctionne à merveille !"</p>
+            <p class="mb-0 text-end fw-bold text-success">— Chef de projet, Durba Centre</p>
+        </div>
+
+        <div class="testimonial-card">
+            <p class="testimonial-text">"Une équipe très professionnelle et rigoureuse en maçonnerie. Les fondations de notre bâtiment sont extrêmement solides. Je recommande vivement HydroBat !"</p>
+            <p class="mb-0 text-end fw-bold text-success">— M. Dieudonné, Opérateur Économique</p>
+        </div>
+    </section>
+
+</div>
+
+<button onclick="scrollToTop()" id="btnScrollTop" title="Retour en haut">
+    <i class="fas fa-arrow-up fs-5"></i>
+</button>
+
+<footer class="footer-contacts">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-6 mb-4">
+                <h3><i class="fas fa-address-book"></i> Nos Contacts Directs</h3>
+
+                <div class="contact-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <a href="tel:{{ config.whatsapp_num }}"> Téléphone : {{ config.whatsapp_num }}</a>
+                </div>
+
+                <div class="contact-item">
+                    <i class="fab fa-whatsapp"></i>
+                    <a href="https://wa.me/{{ config.whatsapp_num }}"> WhatsApp : Discuter en direct</a>
+                </div>
+
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <a href="mailto:contact@hydrobat.com"> Email : contact@hydrobat.com</a>
+                </div>
+
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span> Adresse : Quartier Mazo, Durba, Province du Haut-Uélé, RDC</span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 mb-4 text-md-end">
+                <h3 class="text-md-end"><i class="fas fa-clock"></i> Horaires de Service</h3>
+                <p class="mb-1 text-muted">Lundi au Samedi : 7h30 — 17h00</p>
+                <p class="text-muted">Interventions urgentes de forage disponibles à Durba et ses environs.</p>
+            </div>
+        </div>
+
+        <hr class="border-secondary my-4">
+
+        <div class="text-center text-muted small pb-2">
+            © 2026 HydroBat Construction |  le développeur du site El joseph
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Récupérer le bouton
+    var mybutton = document.getElementById("btnScrollTop");
+
+    // Afficher le bouton quand on descend de 300px
+    window.onscroll = function() {
+        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+            mybutton.style.display = "flex";
+        } else {
+            mybutton.style.display = "none";
+        }
+    };
+
+    // Fonction de remontée fluide
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+</script>
+
+{% endblock %}
